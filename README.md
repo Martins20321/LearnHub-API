@@ -140,3 +140,14 @@ Category | GET | /categories/{id} | Buscar categoria por ID | 200 OK / 404 Not F
 Lesson | GET | /lessons/{id} | Buscar aula por ID | 200 OK / 404 Not Found
 Enrollment | GET | /enrollments/{userId}/{courseId} | Buscar matrícula | 200 OK / 404 Not Found
 Payment | GET | /payments/{id} | Buscar pagamento | 200 OK / 404 Not Found
+
+---
+
+## 🚧 Próximas Evoluções
+
+Melhorias planejadas para evolução do projeto:
+
+- Implementar testes automatizados com JUnit e Mockito
+- Containerizar a aplicação utilizando Docker
+- Adicionar documentação da API com Swagger / OpenAPI
+- Implementar autenticação e autorização com Spring Security e JWT
