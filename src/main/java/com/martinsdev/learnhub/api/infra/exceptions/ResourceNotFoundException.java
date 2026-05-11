@@ -1,4 +1,4 @@
-package com.martinsdev.learnhub.api.services.exceptions;
+package com.martinsdev.learnhub.api.infra.exceptions;
 
 public class ResourceNotFoundException extends RuntimeException {
     public ResourceNotFoundException(Object id) {

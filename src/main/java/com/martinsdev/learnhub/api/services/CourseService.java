@@ -2,8 +2,8 @@ package com.martinsdev.learnhub.api.services;
 
 import com.martinsdev.learnhub.api.model.Course;
 import com.martinsdev.learnhub.api.repositories.CourseRepository;
-import com.martinsdev.learnhub.api.services.exceptions.DatabaseException;
-import com.martinsdev.learnhub.api.services.exceptions.ResourceNotFoundException;
+import com.martinsdev.learnhub.api.infra.exceptions.DatabaseException;
+import com.martinsdev.learnhub.api.infra.exceptions.ResourceNotFoundException;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
