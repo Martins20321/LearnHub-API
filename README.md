@@ -1,153 +1,74 @@
-# 🎓 Projeto Pessoal: Learning Platform – Spring Boot REST API
+# 🎓 Documentação Técnica - LearnHub API
 
-## Visão Geral do Projeto
+Este documento descreve a infraestrutura técnica e as escolhas de design feitas para garantir que a **LearnHub API** seja uma plataforma educacional resiliente e bem estruturada. O foco atual é a refatoração do domínio para uma arquitetura orientada a documentos (NoSQL).
 
-Este projeto é uma API RESTful completa desenvolvida com Spring Boot 3 + Spring Data JPA, simulando uma plataforma de cursos online (learning platform), com gerenciamento de usuários, cursos, categorias, aulas, matrículas e pagamentos.
+## 1. Stack & Ambiente
 
-Este é um projeto pessoal e prático, criado para consolidar meus conhecimentos em Back-End com Java e Spring, seguindo boas práticas de arquitetura, organização em camadas e modelagem de domínio.
+* **Linguagem:** Java 17 (LTS) - Utilizando Record Types e melhorias de performance.
+* **Framework:** Spring Boot 3.5.8
+* **Persistência:** Spring Data MongoDB.
+* **Banco de Dados:** MongoDB.
+* **Ambiente de Desenvolvimento:** WSL 2 (Windows Subsystem for Linux) e IntelliJ IDEA.
+* **Validação:** Jakarta Bean Validation (Hibernate Validator).
+* **Ferramenta de API:** Postman para testes manuais de endpoints.
 
----
+## 2. Arquitetura em Camadas e Padrões
 
-## 🎯 Objetivos do projeto
-* **Aplicar conceitos fundamentais de Spring Boot em um projeto real** 
-* **Praticar modelagem de domínio com JPA/Hibernate**
-* **Construir uma API REST bem estruturada, seguindo o padrão de camadas:** 
-* **Implementar CRUD completo, tratamento de exceções e boas práticas REST**
+A API segue o padrão de **Layered Architecture**, garantindo o desacoplamento e a facilidade na manutenção:
 
---- 
+* **Controller (Resources):** Porta de entrada da aplicação, responsável pelo gerenciamento de endpoints e contratos HTTP.
+* **Service:** Concentração da lógica de negócio, gerenciando as regras de matrícula e acesso a cursos.
+* **Repository:** Camada de persistência que utiliza Spring Data para comunicação com o MongoDB.
+* **DTO (Data Transfer Objects):** Utilização de `records` para transferência de dados, protegendo as entidades de domínio.
 
-## 📖 Principais Conceitos Aplicados
+## 3. Modelagem de Dados e Integridade
 
-- **Modelagem de Domínio com JPA/Hibernate**
-  - Relacionamentos **One-to-One**, **One-to-Many** e **Many-to-Many com chave composta**
-  - Uso de `@EmbeddedId` para chaves primárias compostas
-  - Enumerações persistidas no banco de dados
+O sistema foi redesenhado para garantir consistência lógica no ambiente NoSQL, utilizando o diagrama de classes abaixo como referência:
 
-- **Arquitetura em Camadas**
-  - `resources` → Controllers REST
-  - `services` → Regras de negócio
-  - `repositories` → Acesso a dados com Spring Data JPA
+### 🔹 Diagrama de Classes
 
-- **CRUD Completo**
-  - Create, Read, Update e Delete
-  - Banco de dados H2 configurado para testes
+> ![Diagrama de Classes](/docs/DiagramaClasses.png)
 
-- **Tratamento Global de Exceções**
-  - Uso de `@ControllerAdvice`
-  - Retorno de erros HTTP padronizados
+### 🔹 Relacionamentos e Estratégia NoSQL:
+* **Course ↔ Lesson:** Relacionamento de **Composição**. No MongoDB, as aulas são embutidas (Embedding) no documento do curso, garantindo que o conteúdo seja recuperado de forma atômica.
+* **User ↔ Enrollment ↔ Course:** A `Enrollment` atua como a ponte entre o aluno e o conteúdo, utilizando referências (Linking) por ID para manter a escalabilidade.
+* **Simplificação do Domínio:** A entidade `Payment` foi removida para otimizar o fluxo principal de aprendizado e gestão de matrículas.
 
----
+## 4. Padronização e Tratamento de Erros
 
-## 🏗️ Arquitetura do Projeto
+A API utiliza um `@ControllerAdvice` para interceptar exceções e garantir respostas consistentes:
 
-O projeto segue o **padrão de arquitetura em três camadas**:
+* **201 Created:** Retornado em cadastros bem-sucedidos (Usuários, Cursos, Matrículas).
+* **204 No Content:** Utilizado em deleções confirmadas.
+* **400 Bad Request:** Acionado por erros de validação ou integridade de dados.
+* **404 Not Found:** Retornado quando um ID não é encontrado na base de dados.
 
-- **Resources (Controllers)**
-  - Exposição dos endpoints REST
+## 5. Fluxos de Negócio (Atual)
 
-- **Services**
-  - Regras de negócio
-  - Controle transacional
+| Operação | Endpoint | Validação Principal | Status Esperado |
+| :--- | :--- | :--- | :--- |
+| **Cadastro Usuário** | `POST /users` | Validação de Role e campos obrigatórios. | 201 Created |
+| **Gestão de Cursos** | `POST /courses` | Vinculação com Category e CourseLevel. | 201 Created |
+| **Consulta de Curso** | `GET /courses/{id}` | Retorno do curso com aulas embutidas. | 200 OK |
+| **Matrícula** | `POST /enrollments` | Registro do momento da matrícula e status inicial. | 201 Created |
 
-- **Repositories**
-  - Persistência de dados com Spring Data JPA
+## 6. Execução Local
 
----
+1. **Pré-requisitos:** JDK 17 e Maven instalados.
+2. **Banco de Dados:** Certifique-se de que uma instância do MongoDB está rodando localmente ou via Atlas.
+3. **Execução:**
+   ```bash
+   mvn clean install
+   mvn spring-boot:run
+   
+## 7. Próximas Evoluções
 
-## 📊 Modelo de Domínio (Entidades)
+O projeto segue em desenvolvimento ativo. As próximas etapas incluem:
 
-### 🔹 Entidades Principais
+* **[ ]** Implementar testes automatizados (JUnit 5 e Mockito).
 
-- **User** – Usuários da plataforma
-- **Course** – Cursos disponíveis
-- **Category** – Categorias dos cursos
-- **Lesson** – Aulas de um curso
-- **Enrollment** – Matrícula de usuários em cursos
-- **Payment** – Pagamento associado à matrícula
+* **[ ]** Containerização total com Docker e Docker Compose.
 
-### 🔹 Enumerações
+* **[ ]** Adicionar documentação da API com Swagger (OpenAPI).
 
-- `UserRole` – Papel do usuário
-- `CourseLevel` – Nível do curso
-- `EnrollmentStatus` – Status da matrícula
-
-### 🔹 Relacionamentos
-
-- **One-to-Many**
-  - Category → Course
-  - Course → Lesson
-  - User → Enrollment
-
-- **Many-to-Many com atributos extras**
-  - User ↔ Course via **Enrollment** (chave composta)
-
-- **One-to-One**
-  - Enrollment ↔ Payment
-
----
-
-## 🛠️ Tecnologias Utilizadas
-
-| Categoria | Tecnologia | Detalhe |
-| :--- | :--- | :--- |
-| **Framework** | Spring Boot | Desenvolvimento rápido de APIs REST. |
-| **Linguagem** | Java | Linguagem base do projeto. |
-| **Persistência** | Spring Data JPA / Hibernate | Mapeamento Objeto-Relacional. |
-| **Banco de Dados** | H2 Database | Banco de dados **em memória** para teste e desenvolvimento local. |
-| **Build Tool** | Apache Maven | Gerenciamento de dependências. |
-| **Testes** | Postman | Utilizado para testar os endpoints da API. |
-
----
-
-## ⚙️ Como Executar a API Localmente
-
-O projeto está configurado para usar o perfil `test` e o banco de dados H2 para que o banco seja inicializado e populado automaticamente.
-
-1.  **Pré-requisitos:** Certifique-se de ter o **JDK** e o **Maven** instalados.
-2.  **Importar:** Clone o projeto e importe-o como um **Projeto Maven** no seu IDE (Ex: STS/Eclipse, IntelliJ).
-3.  **Configuração do H2:** O console do H2 é habilitado para visualização.
-    * **JDBC URL:** `jdbc:h2:mem:testdb` 
-    * **Console:** `http://localhost:8080/h2-console` 
-4.  **Executar:** Execute a classe principal `CourseApplication.java` como uma aplicação Spring Boot.
-5.  **Acesso à API:** A API estará rodando em `http://localhost:8080`.
-
----
-
- ## 🛡️ Tratamento de Exceções
-
-O projeto utiliza um `ResourceExceptionHandler` (via `@ControllerAdvice`) para interceptar exceções e retornar respostas HTTP padronizadas (JSON de erro), garantindo que a API não retorne erros internos 500 para falhas esperadas.
-
-| Exceção de Serviço | Código HTTP | Descrição |
-| :--- | :--- | :--- |
-| `ResourceNotFoundException` | **404 Not Found** | Recurso não encontrado (ex: `GET /users/99`). |
-| `DatabaseException` | **400 Bad Request** | Erro de integridade de dados (ex: tentar excluir um recurso com associações ativas). |
-
----
-
-## 🔗 Endpoints Principais (Exemplos)
-
-Recurso | Método | URI | Ação | Status de Sucesso
---------|--------|-----|------|-----------------
-User | GET | /users | Listar todos os usuários | 200 OK
-User | GET | /users/{id} | Buscar usuário por ID | 200 OK / 404 Not Found
-User | POST | /users | Inserir um novo usuário | 201 Created
-User | PUT | /users/{id} | Atualizar usuário | 200 OK / 404 Not Found
-User | DELETE | /users/{id} | Remover usuário | 204 No Content / 404 Not Found
-Course | GET | /courses | Listar todos os cursos | 200 OK
-Course | GET | /courses/{id} | Buscar curso por ID | 200 OK / 404 Not Found
-Category | GET | /categories | Listar todas as categorias | 200 OK
-Category | GET | /categories/{id} | Buscar categoria por ID | 200 OK / 404 Not Found
-Lesson | GET | /lessons/{id} | Buscar aula por ID | 200 OK / 404 Not Found
-Enrollment | GET | /enrollments/{userId}/{courseId} | Buscar matrícula | 200 OK / 404 Not Found
-Payment | GET | /payments/{id} | Buscar pagamento | 200 OK / 404 Not Found
-
----
-
-## 🚧 Próximas Evoluções
-
-Melhorias planejadas para evolução do projeto:
-
-- Implementar testes automatizados com JUnit e Mockito
-- Containerizar a aplicação utilizando Docker
-- Adicionar documentação da API com Swagger / OpenAPI
-- Implementar autenticação e autorização com Spring Security e JWT
+* **[ ]** Implementar autenticação e autorização com Spring Security e JWT. 
