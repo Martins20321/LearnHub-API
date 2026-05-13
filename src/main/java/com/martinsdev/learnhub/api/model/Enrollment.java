@@ -21,9 +21,6 @@ public class Enrollment implements Serializable {
 
     private Integer status;
 
-    @OneToOne(mappedBy = "enrollment", cascade = CascadeType.ALL)
-    private Payment payment;
-
     public Enrollment(){
 
     }
@@ -73,14 +70,6 @@ public class Enrollment implements Serializable {
 
     public void setStatus(EnrollmentStatus status) {
         this.status = status.getCode();
-    }
-
-    public Payment getPayment() {
-        return payment;
-    }
-
-    public void setPayment(Payment payment) {
-        this.payment = payment;
     }
 
     @Override
